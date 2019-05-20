@@ -7,12 +7,48 @@
 const app = require('../app');
 const debug = require('debug')('api:server');
 const http = require('http');
+const fs = require('fs');
+
+/**
+ * Read config.
+ */
+
+try {
+  // file ==> JavaScript object
+  global.config = {
+    general: JSON.parse(fs.readFileSync(__dirname + '/../config/general.json').toString()),
+    sensitive: JSON.parse(fs.readFileSync(__dirname + '/../config/sensitive.json').toString()),
+  };
+  // type checking
+  if (typeof (global.config.general.port) !== 'string') {
+    throw 'typeof (global.config.general.port) !== \'string\'';
+  }
+  if (typeof (global.config.general.urlToken) !== 'string') {
+    throw 'typeof (global.config.general.urlToken) !== \'string\'';
+  }
+  if (typeof (global.config.general.githubPrefix) !== 'string') {
+    throw 'typeof (global.config.general.githubPrefix) !== \'string\'';
+  }
+  if (typeof (global.config.sensitive.github) !== 'object') {
+    throw 'typeof (global.config.sensitive.github) !== \'object\'';
+  }
+  if (typeof (global.config.sensitive.github.username) !== 'string') {
+    throw 'typeof (global.config.sensitive.github.username) !== \'string\'';
+  }
+  if (typeof (global.config.sensitive.github.token) !== 'string') {
+    throw 'typeof (global.config.sensitive.github.username) !== \'string\'';
+  }
+} catch (e) {
+  console.log(e.toString());
+  process.exit(1);
+}
+console.log('global.config =', JSON.stringify(global.config, null, 2));
 
 /**
  * Get port from environment and store in Express.
  */
 
-const port = normalizePort(process.env.PORT || '3000');
+const port = normalizePort(process.env.PORT || global.config.general.port);
 app.set('port', port);
 
 /**
