@@ -28,6 +28,8 @@ app.use('/api-document', apiDocument);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
+  res.status(404);
+  res.send('404: Not Found');
   next(createError(404));
 });
 

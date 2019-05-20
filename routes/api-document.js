@@ -4,28 +4,51 @@ const request = require('request');
 const router = express.Router();
 
 /* GET api document. */
+
 router.get('/', function (req, res) {
+  req.status(404);
+  res.send('404: Not Found');
+});
+
+router.get('/:filename', function (req, res) {
   if (req.query.token !== global.config.general.urlToken) {
+    req.status(401);
     res.send('401: Unauthorized');
     return;
   }
-  if (typeof (req.query.file) !== 'string') {
+  if (typeof (req.params.filename) !== 'string') {
+    req.status(404);
     res.send('404: Not Found');
     return;
   }
   request(
     {
-      url: global.config.general.githubPrefix + req.query.file,
+      url: global.config.general.githubPrefix + req.params.filename,
       headers: {
-        Authorization: 'token ' + global.config.sensitive.github.token
+        Authorization: 'token ' + global.config.sensitive.github.token,
+        'User-Agent': 'Node.js/request'
       }
     },
     function (error, response, body) {
       if (!error) {
-        res.send('<pre>' + body + '</pre>');
-      } else {
-        res.send('<pre>' + error.toString() + '</pre>');
+        const bodyObject = JSON.parse(body);
+        if (typeof (bodyObject) === 'object') {
+          if (typeof (bodyObject.content) === 'string') {
+            const headerOrigin = req.get('Origin');
+            const data = Buffer.from(bodyObject.content, 'base64').toString('utf8');
+            if (headerOrigin && headerOrigin.indexOf('editor.swagger.io')) {
+              // fetch by editor.swagger.io
+              res.send(data);
+            } else {
+              // browser
+              res.send('<pre>' + data + '</pre>');
+            }
+            return;
+          }
+        }
       }
+      res.status(error.status);
+      res.send(error.toString());
     }
   );
 });
