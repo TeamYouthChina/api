@@ -36,11 +36,9 @@ router.get('/:filename', function (req, res) {
           if (typeof (bodyObject.content) === 'string') {
             const headerOrigin = req.get('Origin');
             const data = Buffer.from(bodyObject.content, 'base64').toString('utf8');
-            if (headerOrigin && headerOrigin.indexOf('editor.swagger.io')) {
-              // fetch by editor.swagger.io
+            if (headerOrigin && headerOrigin.indexOf('editor.swagger.io') !== -1) {
               res.send(data);
             } else {
-              // browser
               res.send('<pre>' + data + '</pre>');
             }
             return;
