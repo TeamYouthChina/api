@@ -6,18 +6,18 @@ const router = express.Router();
 /* GET api document. */
 
 router.get('/', function (req, res) {
-  req.status(404);
+  res.status(404);
   res.send('404: Not Found');
 });
 
 router.get('/:filename', function (req, res) {
   if (req.query.token !== global.config.general.urlToken) {
-    req.status(401);
+    res.status(401);
     res.send('401: Unauthorized');
     return;
   }
   if (typeof (req.params.filename) !== 'string') {
-    req.status(404);
+    res.status(404);
     res.send('404: Not Found');
     return;
   }
