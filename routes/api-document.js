@@ -22,9 +22,9 @@ router.get('/', function (req, res) {
     },
     function (error, response, body) {
       if (!error) {
-        res.send('<body><pre>' + body + '</pre></body>');
+        res.send(body);
       } else {
-        res.send('<body><pre>' + error.toString() + '</pre></body>');
+        res.send(error.toString());
       }
     }
   );
