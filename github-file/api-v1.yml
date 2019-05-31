@@ -1583,6 +1583,11 @@ paths:
           description: authentication header
           schema:
             type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
       tags:
         - Security
       requestBody:
@@ -4966,55 +4971,55 @@ paths:
                 status:
                   code: 4041
                   reason: Cannot find user with id 14
-    put:
-      summary: 更改profile
-      tags:
-        - applicant
-      parameters:
-        - name: id
-          in: path
-          description: user id
-          required: true
-          schema:
-            type: integer
-        - in: header
-          name: X-AUTHENTICATION
-          required: true
-          description: authentication header
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ApplicantRequest'
-      responses:
-        '200':
-          description: return target user
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  content:
-                    $ref: '#/components/schemas/Applicant'
-                  status:
-                    $ref: '#/components/schemas/Status'
-        '404':
-          description: cannot find
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - status
-                properties:
-                  status:
-                    $ref: '#/components/schemas/Status'
-              example:
-                status:
-                  code: 4041
-                  reason: Cannot find user with id 14
+        # put:
+        #   summary: 更改profile
+        #   tags:
+        #     - applicant
+        #   parameters:
+        #     - name: id
+        #       in: path
+        #       description: user id
+        #       required: true
+        #       schema:
+        #         type: integer
+        #     - in: header
+        #       name: X-AUTHENTICATION
+        #       required: true
+        #       description: authentication header
+        #       schema:
+        #         type: string
+        #   requestBody:
+        #     content:
+        #       application/json:
+        #         schema:
+        #           $ref: '#/components/schemas/ApplicantRequest'
+        #   responses:
+        #     '200':
+        #       description: return target user
+        #       content:
+        #         application/json:
+        #           schema:
+        #             type: object
+        #             properties:
+        #               content:
+        #                 $ref: '#/components/schemas/Applicant'
+        #               status:
+        #             $ref: '#/components/schemas/Status'
+        # '404':
+        #   description: cannot find
+        #   content:
+        #     application/json:
+        #       schema:
+        #         type: object
+        #         required:
+        #           - status
+        #         properties:
+        #           status:
+        #             $ref: '#/components/schemas/Status'
+        #       example:
+        #         status:
+        #           code: 4041
+        #           reason: Cannot find user with id 14
   # '/applicants':
   #   post:
   #     tags:
@@ -6632,6 +6637,14 @@ paths:
             type: integer
       requestBody:
         description: "File to upload"
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
       responses:
         '200':
           description: "null"
@@ -6674,6 +6687,7 @@ paths:
               - TimesRank
               - USNEWSRank
               - QSRank
+              - label
         - name: length
           required: false
           in: query
@@ -6696,6 +6710,111 @@ paths:
                         type: string
                   status:
                     $ref: '#/components/schemas/Status'
+  '/labels/{type}/{id}':
+    get:
+      summary: 获得某种实体的标签
+      tags:
+        - Label
+      parameters:
+        - name: type
+          in: path
+          description: type of domain
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          description: id of domain
+          required: true
+          schema:
+            type: integer
+        - in: header
+          name: X-AUTHENTICATION
+          required: true
+          description: authentication header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: the label list of the domain
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Label'
+                  status:
+                    $ref: '#/components/schemas/Status'
+  '/labels':
+    post:
+      summary: 给各种实体添加标签
+      tags:
+        - Label
+      parameters:
+        - in: header
+          name: X-AUTHENTICATION
+          required: true
+          description: authentication header
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - label_code
+                - target_id
+                - target_type
+              properties:
+                label_code:
+                  type: string
+                target_id:
+                  type: integer
+                target_type:
+                  type: integer
+      responses:
+        '201':
+          description: add label successfullly
+  '/labels/{labelCode}/{targetType}/{targetId}':
+    delete:
+      summary: 删除各种实体的某个标签
+      tags:
+        - Label
+      parameters:
+        - name: labelCode
+          schema:
+            type: string
+          in: path
+          required: true
+          description: label code
+        - name: targetType
+          schema:
+            type: integer
+          in: path
+          required: true
+          description: the type of the target, 1 for question, 2 for essay, 3 for editorial, 100 for user, 200 for company, 300 for job
+        - name: targetId
+          schema:
+            type: integer
+          in: path
+          required: true
+          description: id of domain
+        - in: header
+          name: X-AUTHENTICATION
+          required: true
+          description: authentication header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: delete label successfullly
 components:
   schemas:
     ContentRequest:
@@ -7123,34 +7242,34 @@ components:
           type: string
         isInJob:
           type: boolean
-        skills:
-          type: array
+          # skills:
+          #   type: array
           items:
             type: string
-        currentCompany:
-          $ref: '#/components/schemas/Company'
+        # currentCompany:
+        #   $ref: '#/components/schemas/Company'
         educations:
           type: array
           items:
             $ref: '#/components/schemas/EducationInfo'
-        contacts:
-          $ref: '#/components/schemas/ContactInfo'
+        # contacts:
+        #   $ref: '#/components/schemas/ContactInfo'
         works:
           type: array
           items:
             $ref: '#/components/schemas/WorkExperienceInfo'
-        projects:
-          type: array
-          items:
-            $ref: '#/components/schemas/Project'
+        # projects:
+        #   type: array
+        #   items:
+        #     $ref: '#/components/schemas/Project'
         extracurriculars:
           type: array
           items:
             $ref: '#/components/schemas/Extracurricular'
-        certifications:
-          type: array
-          items:
-            $ref: '#/components/schemas/Certification'
+        # certifications:
+        #   type: array
+        #   items:
+        #     $ref: '#/components/schemas/Certification'
     JobResponse:
       allOf:
         - $ref: '#/components/schemas/Job'
@@ -7493,3 +7612,19 @@ components:
           type: boolean
         create_at:
           type: integer
+    Label:
+      type: object
+      required:
+        - label_id
+        - label_code
+        - label_chn
+        - label_eng
+      properties:
+        label_id:
+          type: integer
+        label_code:
+          type: string
+        label_chn:
+          type: string
+        label_eng:
+          type: string
